@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("hello-world-app")
-
 app = FastAPI()
+
+mcp = FastMCP("hello-world-app")
 
 
 @mcp.tool()
@@ -29,8 +29,8 @@ async def hello_widget():
     """)
 
 
-# IMPORTANT:
-# mount MCP app DIRECTLY
-mcp_http_app = mcp.streamable_http_app()
+# IMPORTANT
+mcp_app = mcp.streamable_http_app()
 
-app.mount("/mcp", mcp_http_app)
+# mount WITHOUT trailing slash problems
+app.mount("/mcp-server", mcp_app)
