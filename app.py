@@ -4,20 +4,29 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from mcp.server.fastmcp import FastMCP
 
+BASE_URL = os.getenv(
+    "BASE_URL",
+    "mcp-production-ec83.up.railway.app"
+)
+
+mcp = FastMCP("hello-world-app")
+
+
+@mcp.tool()
+def greet_user(name: str) -> str:
+    return f"Hello {name}"
+
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from mcp.server.fastmcp import FastMCP
+
 app = FastAPI()
 
 mcp = FastMCP("hello-world-app")
 
 
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
-
-
 @mcp.tool()
 def greet_user(name: str) -> dict:
-    """
-    Greet a user.
-    """
-
     return {
         "content": [
             {
@@ -25,11 +34,8 @@ def greet_user(name: str) -> dict:
                 "text": f"Hello {name}"
             }
         ],
-        "structuredContent": {
-            "message": f"Hello {name}"
-        },
         "_meta": {
-            "openai/outputTemplate": f"{BASE_URL}/widget/hello"
+            "openai/outputTemplate": "https://mcp-production-ec83.up.railway.app/widget/hello"
         }
     }
 
@@ -41,15 +47,38 @@ async def root():
 
 @app.get("/widget/hello")
 async def hello_widget():
-    html = """
+    return HTMLResponse("""
     <html>
-    <body style="font-family:sans-serif;padding:20px;">
+      <body style="font-family:sans-serif;padding:20px;">
         <h1>Hello Widget</h1>
-        <p>This UI comes from your MCP app.</p>
-    </body>
+        <p>Connected successfully.</p>
+      </body>
     </html>
-    """
-    return HTMLResponse(html)
+    """)
 
 
+# MCP endpoint
 app.mount("/mcp", mcp.streamable_http_app())
+app = FastAPI()
+
+
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
+
+@app.get("/widget/hello")
+async def hello_widget():
+    return HTMLResponse(f"""
+    <html>
+      <body style="font-family:sans-serif;padding:20px;">
+        <h1>Hello Widget</h1>
+        <p>Connected successfully.</p>
+        <p>Base URL: {BASE_URL}</p>
+      </body>
+    </html>
+    """)
+
+
+# IMPORTANT
+app.mount("/", mcp.streamable_http_app())
