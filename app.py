@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from mcp.server.fastmcp import FastMCP
@@ -5,6 +7,9 @@ from mcp.server.fastmcp import FastMCP
 app = FastAPI()
 
 mcp = FastMCP("hello-world-app")
+
+
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 
 @mcp.tool()
@@ -24,9 +29,14 @@ def greet_user(name: str) -> dict:
             "message": f"Hello {name}"
         },
         "_meta": {
-            "openai/outputTemplate": "http://localhost:8000/widget/hello"
+            "openai/outputTemplate": f"{BASE_URL}/widget/hello"
         }
     }
+
+
+@app.get("/")
+async def root():
+    return {"status": "ok"}
 
 
 @app.get("/widget/hello")

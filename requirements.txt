@@ -1,2 +1,3 @@
-pip install "mcp[cli]"
 fastapi
+uvicorn
+mcp[cli]
