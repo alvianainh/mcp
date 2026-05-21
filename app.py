@@ -2,24 +2,14 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from mcp.server.fastmcp import FastMCP
 
-app = FastAPI()
-
 mcp = FastMCP("hello-world-app")
+
+app = FastAPI()
 
 
 @mcp.tool()
-def greet_user(name: str) -> dict:
-    return {
-        "content": [
-            {
-                "type": "text",
-                "text": f"Hello {name}"
-            }
-        ],
-        "_meta": {
-            "openai/outputTemplate": "https://mcp-production-ec83.up.railway.app/widget/hello"
-        }
-    }
+def greet_user(name: str) -> str:
+    return f"Hello {name}"
 
 
 @app.get("/")
@@ -39,7 +29,8 @@ async def hello_widget():
     """)
 
 
-# MCP endpoint
-mcp_app = mcp.streamable_http_app()
+# IMPORTANT:
+# mount MCP app DIRECTLY
+mcp_http_app = mcp.streamable_http_app()
 
-app.mount("/mcp", mcp_app)
+app.mount("/mcp", mcp_http_app)
